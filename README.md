@@ -25,7 +25,8 @@ Nio Terra models are engineered strictly as **pure-code generation and systems p
 | Model | Architecture | Disk Size | Peak Resident RAM (`VmHWM`) | Active Decode (CPU) | Specialization & Role |
 | :--- | :--- | :---: | :---: | :---: | :--- |
 | 🐆 **Cheetah** | 1.5B (28 Layers) | **1.11 GB** | **`< 460 MB`** | **11.22 tok/s** | **Sovereign Code Sprinter:** Instant terminal commands, syntax transformations, and sub-20ms inline reflex generation. |
-| 🦬 **Bison** | 7.0B MoE (48 Layers) | **4.68 GB** | **`< 1.35 GB`** | **4.58 tok/s** | **Pure-Code Land Titan:** Deep systems programming, kernel logic, and formal invariant proofs. |
+| 🐅 **Tiger** | 3.0B (36 Layers) | **2.10 GB** | **`< 720 MB`** *(698 MB)* | **8.5–10.0 tok/s** | **Daily Vibe Coder & Systems Workhorse:** Full production-grade feature authoring, multi-file modules, and zero conversational fluff. |
+| 🦬 **Bison** | 7.0B MoE (48 Layers) | **4.68 GB** | **`< 1.35 GB`** *(1,329 MB)* | **4.58 tok/s** | **Pure-Code Land Titan:** Deep systems programming, kernel logic, and formal invariant proofs. |
 
 ---
 
@@ -42,7 +43,7 @@ Traditional Foundation Model (Ollama / Llama.cpp):
 
 Nio Terra (v-µLM Sliding Window + Prefix Cache + nio-xs):
 [ mmap Zero-Copy View ] ──> 4-Layer Rolling Window KV ──> Disk Prefix Cache
-└──> Cheetah: 460 MB Peak RAM | Bison: 1,329 MB Peak RAM (Silky Smooth)
+└──> Cheetah: 460 MB | Tiger: 698 MB | Bison: 1,329 MB Peak RAM (Silky Smooth)
 ```
 
 1. **Dynamic Layer Sliding Window:**
@@ -50,7 +51,7 @@ Nio Terra (v-µLM Sliding Window + Prefix Cache + nio-xs):
 2. **Disk-Persisted Binary Prefix Cache:**
    Static system prompts and invariant headers are precomputed and cached directly to disk (`~/.nioxs/cache/prefix_*.bin`). Cold-start prefill on CPU drops from **103 seconds down to 17 seconds** (~6× acceleration).
 3. **Speculative Decoding (N-gram + Bigram Draft):**
-   Cheetah and Bison propose draft tokens using AST bigram lookahead tables and zero-weight candidate caches, achieving speculative speedups on pure CPU.
+   Cheetah, Tiger, and Bison propose draft tokens using AST bigram lookahead tables and zero-weight candidate caches, achieving speculative speedups on pure CPU.
 4. **4-Layer Rolling Window KV:**
    Rather than reserving linear gigabytes for theoretical context windows, KV caches are dynamically bounded to active attention spans, slashing cache overhead by >80%.
 
@@ -60,13 +61,13 @@ Nio Terra (v-µLM Sliding Window + Prefix Cache + nio-xs):
 
 Verified on a consumer laptop CPU without GPU acceleration:
 
-| Benchmark Dimension | Upstream Stock 7B (Ollama) | 🦬 Bison (7.0B MoE) | Upstream Stock 1.5B (Ollama) | 🐆 Cheetah (1.5B) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Peak Resident RAM (RSS)** | `6,200 MB` | **`1,329 MB`** *(4.6× lower)* | `1,850 MB` | **`460 MB`** *(4.0× lower)* |
-| **Cold Prefill Time** | `103.6 s` | **`17.5 s`** *(Prefix Cached)* | `6.5 s` | **`3.3 s`** *(Instant Reflex)* |
-| **Active Decode Throughput** | ~2.5 tok/s | **4.58 tok/s** | ~7.0 tok/s | **11.22 tok/s** *(Spec-Decode)* |
-| **Speculative Acceleration** | ❌ None | **✅ Active** | ❌ None | **✅ Active (N-gram/Trio)** |
-| **Conversational Filler** | High (Chatty) | **Zero (Code Only)** | High (Chatty) | **Zero (Code Only)** |
+| Benchmark Dimension | Upstream Stock 7B | 🦬 Bison (7.0B MoE) | Upstream Stock 3B | 🐅 Tiger (3.0B) | Upstream Stock 1.5B | 🐆 Cheetah (1.5B) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Peak Resident RAM (RSS)** | `6,200 MB` | **`1,329 MB`** | `3,400 MB` | **`698 MB`** | `1,850 MB` | **`460 MB`** |
+| **Cold Prefill Time** | `103.6 s` | **`17.5 s`** *(Cached)* | `24.0 s` | **`10.3 s`** *(Cached)* | `6.5 s` | **`3.3 s`** *(Instant)* |
+| **Active Decode Throughput** | ~2.5 tok/s | **4.58 tok/s** | ~5.0 tok/s | **8.50 tok/s** | ~7.0 tok/s | **11.22 tok/s** |
+| **Speculative Acceleration** | ❌ None | **✅ Active** | ❌ None | **✅ Active (N-gram)** | ❌ None | **✅ Active (Trio)** |
+| **Conversational Filler** | High (Chatty) | **Zero (Code Only)** | High (Chatty) | **Zero (Code Only)** | High (Chatty) | **Zero (Code Only)** |
 
 ---
 
@@ -86,6 +87,9 @@ Download and verify cryptographic SHA-256 signatures from [`nio-xs-models`](http
 # Pull Cheetah (1.5B Code Sprinter, 1.11 GB)
 nioxs pull cheetah
 
+# Pull Tiger (3.0B Daily Vibe Coder, 2.10 GB)
+nioxs pull tiger
+
 # Pull Bison (7.0B MoE Land Titan, 4.68 GB)
 nioxs pull bison
 ```
@@ -96,23 +100,24 @@ nioxs pull bison
 nioxs cheetah "Write an iterative Rust function for Fibonacci"
 ```
 
-```rust
-fn fibonacci(n: usize) -> u64 {
-    if n <= 1 {
-        return n as u64;
-    }
-    let mut a = 0;
-    let mut b = 1;
-    for _ in 2..=n {
-        let temp = a + b;
-        a = b;
-        b = temp;
-    }
-    b
-}
+### 4. Run Tiger (Daily Vibe Coding Workhorse)
+
+```bash
+nioxs tiger "Write a thread-safe LRU cache in Rust with tests"
 ```
 
-### 4. Run Bison (Systems Titan & Invariant Prover)
+```rust
+use std::collections::{HashMap, LinkedList};
+use std::sync::{Arc, Mutex};
+
+pub struct LRUCache<K, V> {
+    capacity: usize,
+    store: Arc<Mutex<HashMap<K, LinkedList<(K, V)>>>>,
+}
+...
+```
+
+### 5. Run Bison (Systems Titan & Invariant Prover)
 
 ```bash
 nioxs bison "Implement a lock-free ring buffer in Rust"
@@ -136,7 +141,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 | Fleet | Specialization | Models |
 | :--- | :--- | :--- |
 | 🌊 **[`nio-marine`](https://github.com/nio-labs/nio-marine)** | Conversational Pair-Programming & Architectural Reviews | Blue (1.4B), Beluga (3.0B), Manta (494M), Skate (135M) |
-| 🌍 **[`nio-terra`](https://github.com/nio-labs/nio-terra)** | Pure-Code Systems Titans & Sub-20ms Code Sprinters | Cheetah (1.5B), Bison (7.0B MoE) |
+| 🌍 **[`nio-terra`](https://github.com/nio-labs/nio-terra)** | Pure-Code Systems Titans & Sub-20ms Code Sprinters | Cheetah (1.5B), Tiger (3.0B), Bison (7.0B MoE) |
 | 🦅 **`nio-avian`** | Visual Multimodal & Screenshot Debugging Fleet | *(Coming Soon)* |
 
 ---
