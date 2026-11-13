@@ -24,9 +24,10 @@ Nio Terra models are engineered strictly as **pure-code generation and systems p
 
 | Model | Architecture | Disk Size | Peak Resident RAM (`VmHWM`) | Active Decode (CPU) | Specialization & Role |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| 🐆 **Cheetah** | 1.5B (28 Layers) | **1.11 GB** | **`< 460 MB`** | **11.22 tok/s** | **Sovereign Code Sprinter:** Instant terminal commands, syntax transformations, and sub-20ms inline reflex generation. |
-| 🐅 **Tiger** | 3.0B (36 Layers) | **2.10 GB** | **`< 720 MB`** *(698 MB)* | **8.5–10.0 tok/s** | **Daily Vibe Coder & Systems Workhorse:** Full production-grade feature authoring, multi-file modules, and zero conversational fluff. |
-| 🦬 **Bison** | 7.0B MoE (48 Layers) | **4.68 GB** | **`< 1.35 GB`** *(1,329 MB)* | **4.58 tok/s** | **Pure-Code Land Titan:** Deep systems programming, kernel logic, and formal invariant proofs. |
+| 🐆 **Cheetah** | 1.5B (28 Layers) | **1.11 GB** | **`< 460 MB`** | **11.22 tok/s** | **Sovereign Code Sprinter:** Instant terminal commands, syntax transformations, and sub-20ms inline reflex generation. Zero filler. |
+| 🐅 **Tiger** | 3.0B (36 Layers) | **2.10 GB** | **`< 720 MB`** *(698 MB)* | **8.5–10.0 tok/s** | **Daily Vibe Coder & Systems Workhorse:** Full production-grade feature authoring, multi-file modules, zero conversational fluff. |
+| 🦬 **Bison** | 7.0B MoE (48 Layers) | **4.68 GB** | **`< 1.35 GB`** *(1,329 MB)* | **4.58 tok/s** | **Pure-Code Land Titan:** Deep systems programming, kernel logic, and formal invariant proofs. Zero filler. |
+| 🦊 **Fox** | 3.0B (36 Layers) | **2.10 GB** | **`< 720 MB`** *(698 MB)* | **8.5–10.0 tok/s** | **Sovereign Articulate Mentor & Rubber Duck:** Highly chatty, pedagogical pair programming, architectural trade-offs, and interactive code walkthroughs. |
 
 ---
 
@@ -61,13 +62,13 @@ Nio Terra (v-µLM Sliding Window + Prefix Cache + nio-xs):
 
 Verified on a consumer laptop CPU without GPU acceleration:
 
-| Benchmark Dimension | Upstream Stock 7B | 🦬 Bison (7.0B MoE) | Upstream Stock 3B | 🐅 Tiger (3.0B) | Upstream Stock 1.5B | 🐆 Cheetah (1.5B) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Peak Resident RAM (RSS)** | `6,200 MB` | **`1,329 MB`** | `3,400 MB` | **`698 MB`** | `1,850 MB` | **`460 MB`** |
-| **Cold Prefill Time** | `103.6 s` | **`17.5 s`** *(Cached)* | `24.0 s` | **`10.3 s`** *(Cached)* | `6.5 s` | **`3.3 s`** *(Instant)* |
-| **Active Decode Throughput** | ~2.5 tok/s | **4.58 tok/s** | ~5.0 tok/s | **8.50 tok/s** | ~7.0 tok/s | **11.22 tok/s** |
-| **Speculative Acceleration** | ❌ None | **✅ Active** | ❌ None | **✅ Active (N-gram)** | ❌ None | **✅ Active (Trio)** |
-| **Conversational Filler** | High (Chatty) | **Zero (Code Only)** | High (Chatty) | **Zero (Code Only)** | High (Chatty) | **Zero (Code Only)** |
+| Benchmark Dimension | Upstream Stock 7B | 🦬 Bison (7.0B MoE) | Upstream Stock 3B | 🐅 Tiger (3.0B) | 🦊 Fox (3.0B) | Upstream Stock 1.5B | 🐆 Cheetah (1.5B) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Peak Resident RAM (RSS)** | `6,200 MB` | **`1,329 MB`** | `3,400 MB` | **`698 MB`** | **`698 MB`** | `1,850 MB` | **`460 MB`** |
+| **Cold Prefill Time** | `103.6 s` | **`17.5 s`** *(Cached)* | `24.0 s` | **`10.3 s`** *(Cached)* | **`10.3 s`** *(Cached)* | `6.5 s` | **`3.3 s`** *(Instant)* |
+| **Active Decode Throughput** | ~2.5 tok/s | **4.58 tok/s** | ~5.0 tok/s | **8.50 tok/s** | **8.50 tok/s** | ~7.0 tok/s | **11.22 tok/s** |
+| **Speculative Acceleration** | ❌ None | **✅ Active** | ❌ None | **✅ Active (N-gram)** | **✅ Active (N-gram)** | ❌ None | **✅ Active (Trio)** |
+| **Conversational Style** | High (Chatty) | **Zero (Code Only)** | High (Chatty) | **Zero (Code Only)** | **High (Articulate Mentor)** | High (Chatty) | **Zero (Code Only)** |
 
 ---
 
@@ -89,6 +90,9 @@ nioxs pull cheetah
 
 # Pull Tiger (3.0B Daily Vibe Coder, 2.10 GB)
 nioxs pull tiger
+
+# Pull Fox (3.0B Articulate Mentor & Rubber Duck, 2.10 GB)
+nioxs pull fox
 
 # Pull Bison (7.0B MoE Land Titan, 4.68 GB)
 nioxs pull bison
@@ -117,7 +121,15 @@ pub struct LRUCache<K, V> {
 ...
 ```
 
-### 5. Run Bison (Systems Titan & Invariant Prover)
+### 5. Run Fox (Articulate Mentor & Interactive Rubber Duck)
+
+```bash
+nioxs fox "Why should I use an atomic compare-and-swap (CAS) loop here, and what are the trade-offs?"
+```
+
+Fox breaks down the architectural theory, memory ordering implications, and guides you through the concept conversationally.
+
+### 6. Run Bison (Systems Titan & Invariant Prover)
 
 ```bash
 nioxs bison "Implement a lock-free ring buffer in Rust"
@@ -141,7 +153,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 | Fleet | Specialization | Models |
 | :--- | :--- | :--- |
 | 🌊 **[`nio-marine`](https://github.com/nio-labs/nio-marine)** | Conversational Pair-Programming & Architectural Reviews | Blue (1.4B), Beluga (3.0B), Manta (494M), Skate (135M) |
-| 🌍 **[`nio-terra`](https://github.com/nio-labs/nio-terra)** | Pure-Code Systems Titans & Sub-20ms Code Sprinters | Cheetah (1.5B), Tiger (3.0B), Bison (7.0B MoE) |
+| 🌍 **[`nio-terra`](https://github.com/nio-labs/nio-terra)** | Pure-Code Systems Titans, Vibe Coders & Articulate Mentors | Cheetah (1.5B), Tiger (3.0B), Fox (3.0B), Bison (7.0B MoE) |
 | 🦅 **`nio-avian`** | Visual Multimodal & Screenshot Debugging Fleet | *(Coming Soon)* |
 
 ---
