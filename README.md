@@ -26,8 +26,8 @@ Nio Terra models are engineered strictly as **pure-code generation and systems p
 | :--- | :--- | :---: | :---: | :---: | :--- |
 | 🐆 **Cheetah** | 1.5B (28 Layers) | **1.11 GB** | **`< 460 MB`** | **11.22 tok/s** | **Sovereign Code Sprinter:** Instant terminal commands, syntax transformations, and sub-20ms inline reflex generation. Zero filler. |
 | 🐅 **Tiger** | 3.0B (36 Layers) | **2.10 GB** | **`< 720 MB`** *(698 MB)* | **8.5–10.0 tok/s** | **Daily Vibe Coder & Systems Workhorse:** Full production-grade feature authoring, multi-file modules, zero conversational fluff. |
-| 🦬 **Bison** | 7.0B MoE (48 Layers) | **4.68 GB** | **`< 1.35 GB`** *(1,329 MB)* | **4.58 tok/s** | **Pure-Code Land Titan:** Deep systems programming, kernel logic, and formal invariant proofs. Zero filler. |
 | 🦊 **Fox** | 3.0B (36 Layers) | **2.10 GB** | **`< 720 MB`** *(698 MB)* | **8.5–10.0 tok/s** | **Sovereign Articulate Mentor & Rubber Duck:** Highly chatty, pedagogical pair programming, architectural trade-offs, and interactive code walkthroughs. |
+| 🐇 **Rabbit** | 3.0B (36 Layers) | **2.10 GB** | **`< 720 MB`** *(698 MB)* | **8.5–10.0 tok/s** | **Sovereign Deep Thinker & Root-Cause Detective:** Goes down the rabbit hole with step-by-step `<think>` CoT reasoning to solve elusive bugs, race conditions, and architecture bottlenecks. |
 
 ---
 
@@ -44,15 +44,15 @@ Traditional Foundation Model (Ollama / Llama.cpp):
 
 Nio Terra (v-µLM Sliding Window + Prefix Cache + nio-xs):
 [ mmap Zero-Copy View ] ──> 4-Layer Rolling Window KV ──> Disk Prefix Cache
-└──> Cheetah: 460 MB | Tiger: 698 MB | Bison: 1,329 MB Peak RAM (Silky Smooth)
+└──> Cheetah: 460 MB | Tiger: 698 MB | Fox: 698 MB | Rabbit: 698 MB Peak RAM (Silky Smooth)
 ```
 
 1. **Dynamic Layer Sliding Window:**
    Instead of keeping all transformer layers permanently pinned in physical RAM, `nio-xs` streams layer slices from disk via `mmap` and kernel read-ahead advisories (`libc::madvise(MADV_WILLNEED)`). Resident RAM reflects only active compute blocks.
 2. **Disk-Persisted Binary Prefix Cache:**
-   Static system prompts and invariant headers are precomputed and cached directly to disk (`~/.nioxs/cache/prefix_*.bin`). Cold-start prefill on CPU drops from **103 seconds down to 17 seconds** (~6× acceleration).
+   Static system prompts and invariant headers are precomputed and cached directly to disk (`~/.nioxs/cache/prefix_*.bin`). Cold-start prefill on CPU drops from **103 seconds down to 10 seconds** (~10× acceleration).
 3. **Speculative Decoding (N-gram + Bigram Draft):**
-   Cheetah, Tiger, and Bison propose draft tokens using AST bigram lookahead tables and zero-weight candidate caches, achieving speculative speedups on pure CPU.
+   Cheetah, Tiger, Fox, and Rabbit propose draft tokens using AST bigram lookahead tables and zero-weight candidate caches, achieving speculative speedups on pure CPU.
 4. **4-Layer Rolling Window KV:**
    Rather than reserving linear gigabytes for theoretical context windows, KV caches are dynamically bounded to active attention spans, slashing cache overhead by >80%.
 
@@ -62,13 +62,13 @@ Nio Terra (v-µLM Sliding Window + Prefix Cache + nio-xs):
 
 Verified on a consumer laptop CPU without GPU acceleration:
 
-| Benchmark Dimension | Upstream Stock 7B | 🦬 Bison (7.0B MoE) | Upstream Stock 3B | 🐅 Tiger (3.0B) | 🦊 Fox (3.0B) | Upstream Stock 1.5B | 🐆 Cheetah (1.5B) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Peak Resident RAM (RSS)** | `6,200 MB` | **`1,329 MB`** | `3,400 MB` | **`698 MB`** | **`698 MB`** | `1,850 MB` | **`460 MB`** |
-| **Cold Prefill Time** | `103.6 s` | **`17.5 s`** *(Cached)* | `24.0 s` | **`10.3 s`** *(Cached)* | **`10.3 s`** *(Cached)* | `6.5 s` | **`3.3 s`** *(Instant)* |
-| **Active Decode Throughput** | ~2.5 tok/s | **4.58 tok/s** | ~5.0 tok/s | **8.50 tok/s** | **8.50 tok/s** | ~7.0 tok/s | **11.22 tok/s** |
-| **Speculative Acceleration** | ❌ None | **✅ Active** | ❌ None | **✅ Active (N-gram)** | **✅ Active (N-gram)** | ❌ None | **✅ Active (Trio)** |
-| **Conversational Style** | High (Chatty) | **Zero (Code Only)** | High (Chatty) | **Zero (Code Only)** | **High (Articulate Mentor)** | High (Chatty) | **Zero (Code Only)** |
+| Benchmark Dimension | Upstream Stock 3B | 🐅 Tiger (3.0B) | 🦊 Fox (3.0B) | 🐇 Rabbit (3.0B) | Upstream Stock 1.5B | 🐆 Cheetah (1.5B) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Peak Resident RAM (RSS)** | `3,400 MB` | **`698 MB`** | **`698 MB`** | **`698 MB`** | `1,850 MB` | **`460 MB`** |
+| **Cold Prefill Time** | `24.0 s` | **`10.3 s`** *(Cached)* | **`10.3 s`** *(Cached)* | **`10.3 s`** *(Cached)* | `6.5 s` | **`3.3 s`** *(Instant)* |
+| **Active Decode Throughput** | ~5.0 tok/s | **8.50 tok/s** | **8.50 tok/s** | **8.50 tok/s** | ~7.0 tok/s | **11.22 tok/s** |
+| **Speculative Acceleration** | ❌ None | **✅ Active (N-gram)** | **✅ Active (N-gram)** | **✅ Active (N-gram)** | ❌ None | **✅ Active (Trio)** |
+| **Conversational Style** | High (Chatty) | **Zero (Code Only)** | **High (Articulate Mentor)** | **Deliberate (&lt;think&gt; Detective)** | High (Chatty) | **Zero (Code Only)** |
 
 ---
 
@@ -94,8 +94,8 @@ nioxs pull tiger
 # Pull Fox (3.0B Articulate Mentor & Rubber Duck, 2.10 GB)
 nioxs pull fox
 
-# Pull Bison (7.0B MoE Land Titan, 4.68 GB)
-nioxs pull bison
+# Pull Rabbit (3.0B Deep Thinker & Root-Cause Detective, 2.10 GB)
+nioxs pull rabbit
 ```
 
 ### 3. Run Cheetah (Instant Reflex)
@@ -129,20 +129,20 @@ nioxs fox "Why should I use an atomic compare-and-swap (CAS) loop here, and what
 
 Fox breaks down the architectural theory, memory ordering implications, and guides you through the concept conversationally.
 
-### 6. Run Bison (Systems Titan & Invariant Prover)
+### 6. Run Rabbit (Deep Thinker & Root-Cause Detective)
 
 ```bash
-nioxs bison "Implement a lock-free ring buffer in Rust"
+nioxs rabbit "Diagnose subtle memory leak and lock convoy in async broadcast channel"
 ```
 
-Bison outputs verified formal invariants inside `<think>` before emitting the implementation:
+Rabbit goes down the rabbit hole with verified formal invariants inside `<think>` before emitting the diagnosis and production fix:
 ```rust
 <think>
-1. Invariants: Head and tail pointers are atomic usize.
-2. Memory order: Acquire on read, Release on write.
-3. Capacity: Power of two with bitmask wrapping.
+1. Root cause: Lagging broadcast receiver buffers unbounded chunks without yield.
+2. Invariant: Buffer capacity must be bounded; drop oldest messages or backpressure sender.
+3. Solution: Use tokio::sync::broadcast with Resubscribe and non-blocking try_recv.
 </think>
-use std::sync::atomic::{AtomicUsize, Ordering};
+use tokio::sync::broadcast;
 ...
 ```
 
@@ -153,7 +153,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 | Fleet | Specialization | Models |
 | :--- | :--- | :--- |
 | 🌊 **[`nio-marine`](https://github.com/nio-labs/nio-marine)** | Conversational Pair-Programming & Architectural Reviews | Blue (1.4B), Beluga (3.0B), Manta (494M), Skate (135M) |
-| 🌍 **[`nio-terra`](https://github.com/nio-labs/nio-terra)** | Pure-Code Systems Titans, Vibe Coders & Articulate Mentors | Cheetah (1.5B), Tiger (3.0B), Fox (3.0B), Bison (7.0B MoE) |
+| 🌍 **[`nio-terra`](https://github.com/nio-labs/nio-terra)** | Pure-Code Systems Titans, Vibe Coders, Mentors & Deep Thinkers | Cheetah (1.5B), Tiger (3.0B), Fox (3.0B), Rabbit (3.0B) |
 | 🦅 **`nio-avian`** | Visual Multimodal & Screenshot Debugging Fleet | *(Coming Soon)* |
 
 ---
